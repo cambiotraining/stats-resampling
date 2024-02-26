@@ -49,25 +49,19 @@ These examples include icons with links to GitHub and Orcid.
 
 About the authors:
 
-- **Alexia Cardona**
-  <a href="https://orcid.org/0000-0002-7877-5565" target="_blank"><i class="fa-brands fa-orcid" style="color:#a6ce39"></i></a> 
-  <a href="https://github.com/ac812" target="_blank"><i class="fa-brands fa-github" style="color:#4078c0"></i></a>  
-  _Affiliation_: Bioinformatics Training Facility, University of Cambridge  
-  _Roles_: conceptualisation
-- **Hugo Tavares**
-  <a href="https://orcid.org/0000-0001-9373-2726" target="_blank"><i class="fa-brands fa-orcid" style="color:#a6ce39"></i></a> 
-  <a href="https://github.com/tavareshugo" target="_blank"><i class="fa-brands fa-github" style="color:#4078c0"></i></a>  
-  _Affiliation_: Bioinformatics Training Facility, University of Cambridge  
-  _Roles_: writing - original draft; conceptualisation; coding
 - **Martin van Rongen**
+  <a href="https://orcid.org/0000-0002-1441-367X" target="_blank"><i class="fa-brands fa-orcid" style="color:#a6ce39"></i></a> 
   <a href="https://github.com/mvanrongen" target="_blank"><i class="fa-brands fa-github" style="color:#4078c0"></i></a>  
   _Affiliation_: Bioinformatics Training Facility, University of Cambridge  
   _Roles_: writing - review & editing; conceptualisation; coding
-
-
+- **Matt Castle**
+  _Affiliation_: Bioinformatics Training Facility, University of Cambridge  
+  _Roles_: writing - review & editing; conceptualisation
+  
+<!--
 ## Citation
 
-<!-- We can do this at the end -->
+ We can do this at the end 
 
 Please cite these materials if:
 
@@ -90,11 +84,4 @@ Or in BibTeX format:
   doi = {}
 }
 ```
-
-
-## Acknowledgements
-
-<!-- if there are no acknowledgements we can delete this section -->
-
-- List any other sources of materials that were used.
-- Or other people that may have advised during the material development (but are not authors).
+-->
