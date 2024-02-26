@@ -19,7 +19,7 @@ filters:
   - courseformat
 
 execute:
-  freeze: true
+  freeze: auto
 
 knitr:
   opts_knit:
