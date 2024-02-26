@@ -1,0 +1,351 @@
+---
+title: "Single permutation tests"
+---
+
+```{r}
+#| echo: false
+#| message: false
+#| results: hide
+source(file = "setup_files/setup.R")
+```
+
+```{python}
+#| echo: false
+#| message: false
+import shutup;shutup.please()
+exec(open('setup_files/setup.py').read())
+```
+
+::: {.callout-tip}
+## Learning outcomes
+
+**Questions**
+
+- How do we analyse data without distributional assumptions?
+
+**Objectives**
+
+Perform Monte Carlo permutation tests for:
+
+- Two samples of continuous data
+:::
+
+## Libraries and functions
+
+::: {.callout-note collapse="true"}
+## Click to expand
+
+::: {.panel-tabset group="language"}
+## R
+
+### Libraries
+### Functions
+
+## Python
+
+### Libraries
+
+```{python}
+#| eval: false
+# A Python data analysis and manipulation tool
+import pandas as pd
+
+# Python equivalent of `ggplot2`
+from plotnine import *
+```
+
+### Functions
+:::
+:::
+
+## Purpose and aim
+
+If we wish to test for a difference between two groups in the case where the assumptions of a two-sample t-test just aren’t met, then a two-sample permutation test procedure is appropriate. It is also appropriate even if the assumptions of a t-test are met, but in that case, it would be easier to just do the t-test.
+
+One of the additional benefits of permutation test is that we aren’t just restricted to testing hypotheses about the means of the two groups. We can test hypotheses about absolutely anything we want! So, we could see if the ranges of the two groups differed significantly etc.
+
+## Data and hypotheses
+
+Let’s consider an experimental data set where we have measured the weights of two groups of 12 female mice (so 24 mice in total). One group of mice was given a perfectly normal diet (`control`) and the other group of mice was given a high fat diet for several months (`highfat`).
+
+We want to test whether there is any difference in the mean weight of the two groups. We still need to specify the hypotheses:
+
+$H_0$: there is no difference in the means of the two groups
+
+$H_1$: there is a difference in the means of the two groups Let’s read in the data and look at it:
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+#| message: false
+mice_weight <- read_csv("data/mice_weight.csv")
+```
+
+```{r}
+ggplot(mice_weight, aes(x = diet, y = weight)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1)
+```
+
+## Python
+
+```{python}
+mice_weight_py = pd.read_csv("data/mice_weight.csv")
+```
+
+```{python}
+#| results: hide
+(ggplot(mice_weight_py,
+         aes(x = "diet",
+             y = "weight")) +
+     geom_boxplot() +
+     geom_jitter(width = 0.1))
+```
+
+:::
+
+Looking at the data, it appears that there might be a difference between the mean weight of the two groups. The weights of the mice on the `highfat` diet appears somewhat higher than on `control`, although there is quite some overlap between the data.
+
+The medians (the horizontal lines in the boxes) are shifted - as are the boxes. So, the first thing we probably want to do is to calculate the exact difference in means:
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+mice_weight %>% 
+  group_by(diet) %>% 
+  summarise(mean_weight = mean(weight)) %>% 
+  ungroup()
+```
+
+We'll want to use this difference later on, so we store it in a variable:
+
+```{r}
+obs_diff_weight <- mice_weight %>% 
+  group_by(diet) %>% 
+  summarise(mean_weight = mean(weight)) %>% 
+  ungroup() %>% 
+  # calculate the difference in weight
+  # (there are many ways that you can do this)
+  pull(mean_weight) %>% 
+  diff()
+
+obs_diff_weight
+```
+
+## Python
+
+```{python}
+obs_diff_weight = (mice_weight_py
+                  .groupby('diet')['weight']
+                  .mean()
+                  .diff()
+                  .iloc[-1])
+```
+
+This gives us an observed difference of:
+
+```{python}
+obs_diff_weight
+```
+
+
+:::
+
+What we want to know is: is this difference unusual/big/statistically significant? Specifically, how likely would it be to get a difference this big if there were no difference between the two groups?
+
+## Permutation theory
+
+The key idea behind permutation techniques is that if the null hypothesis is true, and there is no difference between the two groups then if I were to switch some of the mice from one group to the next then this wouldn’t change the difference between the groups too much. If on the other hand there actually is a difference between the groups (with one group having much higher weights than the other), then if I were to switch some mice between the groups then this should average out the two groups leading to a smaller difference in group means.
+
+So, what we do is we shuffle the mice weights around lots and lots of times, calculating the difference between the group means each time. Once we have done this shuffling hundreds or thousands of times, we will have loads of possible values for the difference in the two group means. At this stage we can look at our actual difference (the one we calculated from our original data) and see how this compares to all of the simulated differences.
+
+We can calculate how many of the simulated differences are bigger than our real difference and this proportion is exactly the p-value that we’re looking for!
+
+Let look at how to carry this out in practice.
+
+::: {.panel-tabset group="language"}
+## R
+
+We will be randomly shuffling our data around. So we set the `seed`, to aid reproducibility for the example.
+
+```{r}
+seed <- 2602
+```
+
+We need to approach this a bit logically, since we are going to iterate a process multiple times. We can break down the steps into the following:
+
+1. Define the number of permutations.
+2. Permute (randomly assign) the `diet` labels, without replacing.
+3. Calculate the *new difference* in means between the groups.
+4. Store the difference and repeat.
+
+```{r}
+set.seed(seed)
+
+# Set the number of permutations
+reps <- 1000
+
+# Create a place to store the values
+permuted_stats <- tibble(permuted_diff = numeric(reps))
+
+# Loop through process
+for(i in 1:reps){
+  # Get the data  
+  permuted_data <- mice_weight
+  
+  # Permute (reshuffle) the group labels
+  permuted_data$diet <- sample(permuted_data$diet)
+  
+  # Calculate the new group differences
+  permuted_diff <- permuted_data %>% 
+  group_by(diet) %>% 
+  summarise(mean_weight = mean(weight)) %>% 
+  ungroup() %>% 
+  pull(mean_weight) %>% 
+  diff()
+  
+  # Store the calculated difference
+  permuted_stats$permuted_diff[i] <- permuted_diff
+}
+```
+
+## Python
+
+```{python}
+seed = 2602
+```
+
+```{python}
+np.random.seed(seed)
+
+# Set the number of permutations
+reps = 1000
+
+# Create a place to store the values
+permuted_stats = pd.DataFrame({'permuted_diff': [0] * reps})
+
+# Loop through process
+for i in range(reps):
+    # Get the data
+    permuted_data_py = mice_weight_py
+    
+    # Permute the group labels
+    permuted_data_py['diet'] = np.random.permutation(permuted_data_py['diet'].values)
+    
+    # Calculate the new group difference
+    permuted_diff = (permuted_data_py 
+    .groupby('diet')['weight']
+    .mean()
+    .diff()
+    .iloc[-1])
+
+    # Store the calculated difference
+    permuted_stats['permuted_diff'][i] = permuted_diff
+
+```
+
+:::
+
+We can visualise the difference as a histogram:
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+ggplot(permuted_stats, aes(permuted_diff)) +
+  geom_histogram() +
+  geom_vline(xintercept = obs_diff_weight, colour = "blue", linewidth = 1)
+```
+
+## Python
+
+```{python}
+#| results: hide
+(ggplot(permuted_stats,
+        aes(x = "permuted_diff")) +
+     geom_histogram() +
+     geom_vline(xintercept = obs_diff_weight, colour = "blue", size = 1))
+```
+
+:::
+
+The histogram is centred around zero, as we would expect: under the null hypothesis in this analysis there shouldn’t be any difference between the groups.
+
+The blue vertical line shows us the value of our actual observed difference.
+
+We can see that our observed difference is unlikely (because it’s out in the tails of the distribution rather than in the middle), but we want to be able to say exactly how unlikely. To do that we need to calculate the proportion of simulated differences that were bigger than our observed value. And, because we’re interested in a two-tailed test, we also need to include any simulated values that were less than `r round(-(obs_diff_weight), 2)` (so the lower tail).
+
+We do this in the following steps:
+
+1. Count the number of occurrences where the permuted difference (`permuted_diff`) is larger than the observed weight difference (`obs_diff_weight`).
+2. Divide this by the number of times we permuted the data (`reps`)
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+permuted_stats %>% 
+  filter(abs(permuted_diff) > obs_diff_weight) %>% 
+  nrow()
+```
+
+If we divide this number by `r reps` (the number of permutations), we get a value of `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps, 3)`.
+
+In this case we have fixed the random number generator. You might not have done that and normally you probably don't want to either. In that case you will get a slightly different value every time you run this. In order to get more precision on this p-value we will need to run more than 1,000 replicates.
+
+A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p- value to within 1% of the actual value (so in this case the p-value is probably between `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
+
+## Python
+
+```{python}
+larger_diff = len(permuted_stats[permuted_stats['permuted_diff'].abs() > obs_diff_weight])
+
+larger_diff
+```
+
+If we divide this number by `r py$reps` (the number of permutations), we get a value of `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps, 3)`.
+
+In this case we have fixed the random number generator. You might not have done that and normally you probably don't want to either. In that case you will get a slightly different value every time you run this. In order to get more precision on this p-value we will need to run more than 1,000 replicates.
+
+A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p- value to within 1% of the actual value (so in this case the p-value is probably between `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
+:::
+
+::: {.panel-tabset group="language"}
+## R
+
+## Python
+
+:::
+
+
+## Exercises
+
+### Title {#sec-exr_title}
+
+:::{.callout-exercise}
+
+{{< level 2 >}}
+
+For this exercise we'll be using the data from `data/file.csv`.
+
+::: {.callout-answer collapse="true"}
+
+::: {.panel-tabset group="language"}
+## R
+
+## Python
+
+:::
+:::
+:::
+
+## Summary
+
+::: {.callout-tip}
+#### Key points
+
+-
+- 
+:::

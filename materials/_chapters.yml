@@ -1,5 +1,6 @@
 book:
   chapters:
-    - part: "Introduction"
+    - part: "Resampling"
       chapters:
         - materials/resampling-intro.qmd
+        - materials/resampling-practical-permutation-single.qmd
