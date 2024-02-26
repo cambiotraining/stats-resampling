@@ -322,6 +322,26 @@ A good rule of thumb is that, for 1,000 replicates, a permutation test will retu
 
 ## Exercises
 
+### Title {#sec-exr_title}
+
+:::{.callout-exercise}
+
+{{< level 2 >}}
+
+For this exercise we'll be using the data from `data/file.csv`.
+
+::: {.callout-answer collapse="true"}
+
+::: {.panel-tabset group="language"}
+## R
+Answer
+
+## Python
+Answer
+
+:::
+:::
+:::
 
 ## Summary
 
