@@ -195,6 +195,8 @@ So, what we do is we shuffle the mice weights around lots and lots of times, cal
 
 We can calculate how many of the simulated differences are bigger than our real difference and this proportion is exactly the p-value that we’re looking for!
 
+## Permutation example
+
 Let look at how to carry this out in practice.
 
 We need to approach this a bit logically, since we are going to iterate a process multiple times. We can break down the steps into the following:
@@ -203,6 +205,8 @@ We need to approach this a bit logically, since we are going to iterate a proces
 2. Permute (randomly assign) the `diet` labels, without replacing.
 3. Calculate the *new difference* in means between the groups.
 4. Store the difference and repeat.
+
+### Permute the data
 
 ::: {.panel-tabset group="language"}
 ## R
@@ -283,6 +287,8 @@ for i in range(reps):
 
 :::
 
+### Comparing permuted values
+
 We can visualise the difference as a histogram:
 
 ::: {.panel-tabset group="language"}
@@ -312,6 +318,10 @@ The blue vertical line shows us the value of our actual observed difference.
 
 We can see that our observed difference is unlikely (because it’s out in the tails of the distribution rather than in the middle), but we want to be able to say exactly how unlikely. To do that we need to calculate the proportion of simulated differences that were bigger than our observed value. And, because we’re interested in a two-tailed test, we also need to include any simulated values that were less than `r round(-(obs_diff_weight), 2)` (so the lower tail).
 
+### Calculating statistical significance
+
+In essence, we are calculating the *statistical significance* by comparing our original data against the null hypothesis.
+
 We do this in the following steps:
 
 1. Count the number of occurrences where the permuted difference (`permuted_diff`) is larger than the observed weight difference (`obs_diff_weight`).
@@ -330,7 +340,7 @@ If we divide this number by `r reps` (the number of permutations), we get a valu
 
 In this case we have fixed the random number generator. You might not have done that and normally you probably don't want to either. In that case you will get a slightly different value every time you run this. In order to get more precision on this p-value we will need to run more than 1,000 replicates.
 
-A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p- value to within 1% of the actual value (so in this case the p-value is probably between `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
+A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p-value to within 1% of the actual value (so in this case the p-value is probably between `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
 
 ## Python
 
@@ -345,7 +355,7 @@ If we divide this number by `r py$reps` (the number of permutations), we get a v
 
 In this case we have fixed the random number generator. You might not have done that and normally you probably don't want to either. In that case you will get a slightly different value every time you run this. In order to get more precision on this p-value we will need to run more than 1,000 replicates.
 
-A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p- value to within 1% of the actual value (so in this case the p-value is probably between `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
+A good rule of thumb is that, for 1,000 replicates, a permutation test will return a p-value to within 1% of the actual value (so in this case the p-value is probably between `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps - 0.01, 3)` and `r round(py$permuted_stats %>% filter(abs(permuted_diff) > obs_diff_weight) %>% nrow() / reps + 0.01, 3)`). If we go to 10,000 replicates, then the error in the estimated p-value reduces to about 0.1%.
 :::
 
 ## Exercises
