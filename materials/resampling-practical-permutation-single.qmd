@@ -39,7 +39,21 @@ Perform Monte Carlo permutation tests for:
 ## R
 
 ### Libraries
+
+```{r}
+#| eval: false
+# A collection of R packages designed for data science
+library(tidyverse)
+```
+
 ### Functions
+
+```{r}
+#| eval: false
+#| warning: false
+# Takes a random sample with or without replacement (default)
+base::sample()
+```
 
 ## Python
 
@@ -50,11 +64,29 @@ Perform Monte Carlo permutation tests for:
 # A Python data analysis and manipulation tool
 import pandas as pd
 
+# A Python package for scientific computing
+import numpy as np
+
 # Python equivalent of `ggplot2`
 from plotnine import *
+
+# Python module providing statistical functionality
+from scipy import stats
 ```
 
 ### Functions
+
+```{python}
+#| eval: false
+# Calculates the difference between two elements
+pandas.DataFrame.diff()
+
+# Randomly permutes a sequence
+numpy.random.permutation()
+
+# Calculates the interquartile range
+scipy.stats.iqr()
+```
 :::
 :::
 
@@ -232,7 +264,10 @@ for i in range(reps):
     permuted_data_py = mice_weight_py
     
     # Permute the group labels
-    permuted_data_py['diet'] = np.random.permutation(permuted_data_py['diet'].values)
+    permuted_data_py['diet'] = (np
+                               .random
+                               .permutation(permuted_data_py['diet']
+                               .values))
     
     # Calculate the new group difference
     permuted_diff = (permuted_data_py 
@@ -300,7 +335,8 @@ A good rule of thumb is that, for 1,000 replicates, a permutation test will retu
 ## Python
 
 ```{python}
-larger_diff = len(permuted_stats[permuted_stats['permuted_diff'].abs() > obs_diff_weight])
+larger_diff = len(permuted_stats[permuted_stats['permuted_diff'] \
+                  .abs() > obs_diff_weight])
 
 larger_diff
 ```
@@ -357,13 +393,14 @@ We have visualised the data previously.
 
 #### Observed statistic
 
-The IQR for each group is as follows:
+To calculate the interquartile range, we use the `IQR()` function. The IQR for each group is as follows:
 
 ```{r}
 mice_weight %>% 
   group_by(diet) %>% 
   summarise(iqr_weight = IQR(weight))
 ```
+
 The observed difference in IQR is:
 
 ```{r}
@@ -377,6 +414,10 @@ obs_diff_iqr
 ```
 
 #### Permute the data
+
+```{r}
+seed <- 2602
+```
 
 ```{r}
 set.seed(seed)
@@ -426,14 +467,117 @@ permuted_stats %>%
 Dividing this by the number of permutations (`r reps`) gives us a p-value of `r permuted_stats %>% filter(abs(permuted_diff) > obs_diff_iqr) %>% nrow() / reps`.
 
 ## Python
-Answer
+
+#### Load and visualise the data
+
+```{python}
+mice_weight_py = pd.read_csv("data/mice_weight.csv")
+```
+
+We have visualised the data previously.
+
+#### Observed statistic
+
+We use the `iqr()` function from `scipy.stats`:
+
+```{python}
+from scipy.stats import iqr
+
+obs_iqr = (mice_weight_py
+          .groupby('diet')['weight']
+          .agg(iqr))
+
+obs_iqr
+```
+
+This gives us an observed difference of:
+
+```{python}
+obs_diff_iqr = obs_iqr.diff().iloc[-1]
+
+obs_diff_iqr
+```
+
+#### Permute the data
+
+```{python}
+seed = 2602
+```
+
+```{python}
+np.random.seed(seed)
+
+# Set the number of permutations
+reps = 1000
+
+# Create a place to store the values
+permuted_stats = pd.DataFrame({'permuted_diff': [0] * reps})
+
+# Loop through process
+for i in range(reps):
+    # Get the data
+    permuted_data_py = mice_weight_py
+    
+    # Permute the group labels
+    permuted_data_py['diet'] = (np
+                               .random
+                               .permutation(permuted_data_py['diet']
+                               .values))
+    
+    # Calculate the new group difference
+    permuted_iqr = (permuted_data_py
+                   .groupby('diet')['weight']
+                   .agg(iqr))
+
+    permuted_diff = permuted_iqr.diff().iloc[-1]
+
+    # Store the calculated difference
+    permuted_stats['permuted_diff'][i] = permuted_diff
+```
+
+```{python}
+#| results: hide
+(ggplot(permuted_stats,
+        aes(x = "permuted_diff")) +
+     geom_histogram() +
+     geom_vline(xintercept = obs_diff_iqr, colour = "blue", size = 1))
+```
+
+#### Calculate the statistical significance
+
+Here we need to find all the values where the permuted IQR is *smaller* than `r -(py$obs_diff_iqr)` or *larger* than `r py$obs_diff_iqr %>% abs()`:
+
+```{python}
+larger_diff = len(permuted_stats[permuted_stats['permuted_diff'] \
+                  .abs() > obs_diff_iqr])
+
+larger_diff
+```
+
+
+If we divide this number by `r py$reps` (the number of permutations), we get a value of `r round(py$permuted_stats %>% filter(abs(permuted_diff) > abs(py$obs_diff_iqr)) %>% nrow() / reps, 3)`.
 
 :::
 
 This analysis shows that there is no statistically significant difference between the interquartile range of weight for the two different diets.
+
+
+:::{.callout-note collapse=true}
+## Differences in IQR in R vs Python: would you like to know more?
+
+The eagle-eyed amongst you might have noticed that the values calculated between R and Python are slightly different. Part of this is caused by the difference in how the random number generators work between the two languages (which we're not going to go into) and part of it by the difference in how the IQR is calculated.
+
+In R, the `IQR()` function uses a default method to calculate the quartiles ("type-7"), which excludes the smallest and largest 25% of the data when calculating the quartiles.
+
+In Python, the `scipy.stats.iqr()` function calculates the interquartile range simply as the difference between the 75th and 25th percentiles.
+
+Hence, some slight differences. If you've *really* got your mind set on making them more equivalent you can specify an extra argument in Python: `rng`. You can set it to include the middle 50% of the data: `iqr(data, rng = (25, 75))`.
+:::
+
 :::
 :::
 
+<!--
 ### title {#sec-exr_title}
 
 :::{.callout-exercise}
@@ -454,12 +598,13 @@ Answer
 :::
 :::
 :::
+-->
 
 ## Summary
 
 ::: {.callout-tip}
 #### Key points
 
--
-- 
+- We can use resampled data to draw conclusions around how likely it is our original data would occur, given the null hypothesis.
+- We can calculate statistical significance using this approach.
 :::
