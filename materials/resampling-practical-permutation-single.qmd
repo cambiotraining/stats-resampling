@@ -197,6 +197,13 @@ We can calculate how many of the simulated differences are bigger than our real 
 
 Let look at how to carry this out in practice.
 
+We need to approach this a bit logically, since we are going to iterate a process multiple times. We can break down the steps into the following:
+
+1. Define the number of permutations.
+2. Permute (randomly assign) the `diet` labels, without replacing.
+3. Calculate the *new difference* in means between the groups.
+4. Store the difference and repeat.
+
 ::: {.panel-tabset group="language"}
 ## R
 
@@ -205,13 +212,6 @@ We will be randomly shuffling our data around. So we set the `seed`, to aid repr
 ```{r}
 seed <- 2602
 ```
-
-We need to approach this a bit logically, since we are going to iterate a process multiple times. We can break down the steps into the following:
-
-1. Define the number of permutations.
-2. Permute (randomly assign) the `diet` labels, without replacing.
-3. Calculate the *new difference* in means between the groups.
-4. Store the difference and repeat.
 
 ```{r}
 set.seed(seed)
