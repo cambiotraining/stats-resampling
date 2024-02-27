@@ -27,7 +27,7 @@ exec(open('setup_files/setup.py').read())
 
 Perform Monte Carlo permutation tests for:
 
-- Two samples of continuous data
+- Single predictors
 :::
 
 ## Libraries and functions
@@ -322,7 +322,119 @@ A good rule of thumb is that, for 1,000 replicates, a permutation test will retu
 
 ## Exercises
 
-### Title {#sec-exr_title}
+### Permuting IQR {#sec-exr_iqr}
+
+:::{.callout-exercise}
+
+{{< level 2 >}}
+
+For this exercise we'll again use the `mice_weight` data from `data/mice_weight.csv`.
+
+One of the advantages of using permutation tests is that we're not limited to just exploring the mean or median from our data. To practice this, we'll explore differences in the interquartile range (IQR) between the `control` and `highfat` groups.
+
+Question: is there a significant difference in the IQR of `weight` between `control` and `highfat` mice?
+
+::: {.callout-answer collapse="true"}
+
+To address the question, we do the following:
+
+1. Load and visualise the data
+2. Calculate the observed IQR for both groups
+3. Permute the data
+4. Calculate how often the permuted IQR is larger than the observed
+
+::: {.panel-tabset group="language"}
+## R
+
+#### Load and visualise the data
+
+```{r}
+#| message: false
+mice_weight <- read_csv("data/mice_weight.csv")
+```
+
+We have visualised the data previously.
+
+#### Observed statistic
+
+The IQR for each group is as follows:
+
+```{r}
+mice_weight %>% 
+  group_by(diet) %>% 
+  summarise(iqr_weight = IQR(weight))
+```
+The observed difference in IQR is:
+
+```{r}
+obs_diff_iqr <- mice_weight %>% 
+  group_by(diet) %>% 
+  summarise(iqr_weight = IQR(weight)) %>% 
+  pull(iqr_weight) %>% 
+  diff()
+
+obs_diff_iqr
+```
+
+#### Permute the data
+
+```{r}
+set.seed(seed)
+
+# Set the number of permutations
+reps <- 1000
+
+# Create a place to store the values
+permuted_stats <- tibble(permuted_diff = numeric(reps))
+
+# Loop through process
+for(i in 1:reps){
+  # Get the data  
+  permuted_data <- mice_weight
+  
+  # Permute (reshuffle) the group labels
+  permuted_data$diet <- sample(permuted_data$diet)
+  
+  # Calculate the new group differences
+  permuted_diff <- permuted_data %>% 
+  group_by(diet) %>% 
+  summarise(iqr_weight = IQR(weight)) %>% 
+  ungroup() %>% 
+  pull(iqr_weight) %>% 
+  diff()
+  
+  # Store the calculated difference
+  permuted_stats$permuted_diff[i] <- permuted_diff
+}
+```
+
+We visualise these as follows:
+
+```{r}
+ggplot(permuted_stats, aes(permuted_diff)) +
+  geom_histogram() +
+  geom_vline(xintercept = obs_diff_iqr, colour = "blue", linewidth = 1)
+```
+#### Calculate statistical significance
+
+```{r}
+permuted_stats %>% 
+  filter(abs(permuted_diff) > obs_diff_iqr) %>% 
+  nrow()
+```
+
+Dividing this by the number of permutations (`r reps`) gives us a p-value of `r permuted_stats %>% filter(abs(permuted_diff) > obs_diff_iqr) %>% nrow() / reps`.
+
+## Python
+Answer
+
+:::
+
+This analysis shows that there is no statistically significant difference between the interquartile range of weight for the two different diets.
+:::
+:::
+
+### title {#sec-exr_title}
 
 :::{.callout-exercise}
 

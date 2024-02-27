@@ -1,5 +1,5 @@
 ---
-title: "Resampling techniques"
+title: "Resampling and simulation techniques"
 author: "Martin van Rongen, Matt Castle"
 date: today
 number-sections: false
@@ -7,26 +7,32 @@ number-sections: false
 
 ## Overview 
 
-Include a one-paragraph summary of the course here. 
+Traditional statistical testing make use of various distributions and assumptions. This often works well, allowing us to analyse our data using standardised tests - or slight variations on them.
+
+However, sometimes you might end up with data that are just *weird* and the standard tests or even the adaptations of them no longer work. This is where resampling and simulation techniques are very useful. Here we use either the original data or simulate new data to explore our hypothesis.
+
+These topics rely on a mixture of statistical literacy and programming competencies. These materials are aimed to provide background and practical tools to address this.
+
+**Note**: The materials are under active development. The learning objectives in brackets will be addressed in further versions of these materials.
 
 ::: {.callout-tip}
-### Learning Objectives
+### Learning objectives
 
-- List course learning objectives here.
-- These describe concepts the learners should grasp and techniques they should be able to use by the end of the course.
-- You can think of these as completing the phrase "after this course, the participant should be able to..."
-- They are not supposed to be as detailed as the learning objectives of each section, but more high-level.
+- Understand which resampling techniques there are and when to use them.
+- Analyse data through permutation techniques
+- (Bootstrapping)
+- (Cross-validation)
+- (Simulation data)
 :::
 
 
-### Target Audience
+### Target audience
 
-Brief description of target audience here.
-
+This course is aimed at researchers and data analysts with an intermediate level of statistical and programming knowledge.
 
 ### Prerequisites
 
-Detail any prerequisite skills needed to attend this course, with links to other relevant materials/courses if possible.
+Confident in the use of R / Python; basic knowledge of statistics (e.g. attended the [Core statistics](https://cambiotraining.github.io/corestats/) course).
 
 
 <!-- Training Developer note: comment the following section out if you did not assign levels to your exercises -->

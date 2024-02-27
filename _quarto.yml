@@ -44,7 +44,7 @@ book:
     logo: "_extensions/cambiotraining/courseformat/img/university_crest_reversed.png"
     right:
       - icon: github
-        href: https://github.com/cambiotraining/
+        href: https://github.com/cambiotraining/stats-resampling
         aria-label: Bioinformatics Training Facility GitHub
       - icon: twitter
         href: https://twitter.com/bioinfocambs
@@ -52,7 +52,7 @@ book:
       - icon: mastodon
         href: https://genomic.social/@BioInfoCambs
         aria-label: Bioinformatics Training Facility Mastodon
-    title: "Resampling techniques"
+    title: "Resampling and simulation techniques"
   chapters:
     - part: "Welcome"
       chapters:

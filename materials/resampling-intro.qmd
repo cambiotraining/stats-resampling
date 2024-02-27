@@ -19,14 +19,14 @@ All traditional statistical test make use of various named distributions or requ
 
 Resampling techniques are the tools that work here. They can allow us to test hypotheses about our data using only the data itself (without appeal to any assumptions about the shape or form of the parent distribution). They are in some ways a much simpler approach to statistics, but because they rely on the ability to generate thousands and tens of thousands of random numbers very quickly, they simply weren’t considered practical back in the day. Even now, they aren’t widely used because they require the user (you, in case you’d forgotten what’s going on at this time of day) to do more than click a button on a stats package or even know the name of the test. These techniques require a mix of statistical knowledge and programming; a combination of skills that isn’t all that common! There are three broad areas of resampling methods (although they are all quite closely related):
 
-1.	Permutation Methods
+1.	Permutation methods
 2.	Bootstrapping
 3.	Cross-validation
 
 Permutation methods are what we will focus on in this practical and they allow us to carry out hypothesis testing.
 
-Bootstrapping is a technique for estimating confidence intervals for parameter estimates. We effectively treat our dataset as if it was the parent distribution, draw samples from it and calculate the statistic of choice (the mean usually) using these sub-samples. If we repeat this process many times, we will eventually be able to construct a distribution for our sample statistic. This can be used to give us a confidence interval for our statistic.
+Bootstrapping is a technique for estimating confidence intervals for parameter estimates. We effectively treat our data as if it was the parent distribution, draw samples from it and calculate the statistic of choice (the mean usually) using these sub-samples. If we repeat this process many times, we will eventually be able to construct a distribution for our sample statistic. This can be used to give us a confidence interval for our statistic.
 
 Cross-validation is at the heart of modern machine learning approaches but existed long before this technique became sexy/fashionable. You divide your data up into two sets: a training set that you use to fit your model and a testing set that you use to evaluate your model. This allows your model accuracy to be empirically measured. There are several variants of this technique (holdout, k-fold cross validation, leave-one-out-cross-validation (LOOCV), leave-p-out-cross-validation (LpOCV) etc.), all of which do essentially the same thing; the main difference between them being a trade-off between the amount of time it takes to perform versus the reliability of the method.
 
-We won’t cover bootstrapping or cross-validation in this practical, but feel free to Google them.
+We'll start with permutations techniques and cover bootstrapping and cross-validation in subsequent practicals.
