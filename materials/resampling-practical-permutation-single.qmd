@@ -579,6 +579,210 @@ Hence, some slight differences. If you've *really* got your mind set on making t
 :::
 :::
 
+### Rats - strange metrics {#sec-exr_ratswheel}
+
+:::{.callout-exercise}
+
+{{< level 2 >}}
+
+For this exercise we'll be using the data from `data/rats_wheel.csv`.
+
+This data set contains information on the length of time that 24 rats were able to stay balanced on a rotating wheel. Half of the rats were assigned to the control group and the other half were given a dose of a centrally acting muscle relaxant. The animals were placed on a rotating cylinder and the length of time that each rat remained on the cylinder was measured, up to a maximum of 300 seconds.
+
+The data set contains two variables: `time` and `group`.
+
+Whilst you could explore differences in means between these two groups, in this case an alternative statistic presents itself. When you look at the data you should notice that for the control group that all 12 rats manage to stay on the roller for the maximum 300 seconds, whereas in the treated group 5 out of the 12 fall off earlier.
+
+For this exercise, instead of calculating the mean length of time for each group, you should calculate the proportion of rats that make it to 300s in each group and find the difference. This will be your statistic.
+
+Answer the following questions:
+
+1. Is the proportion of rats that remain on the wheel the entire duration of the experiment is the same between each group? Use a permutation test to explore this.
+2. Why would the difference in medians be a particularly useless statistic in this case?
+
+::: {.callout-answer collapse="true"}
+
+Load and visualise the data.
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+rats_wheel <- read_csv("data/rats_wheel.csv")
+```
+
+```{r}
+ggplot(rats_wheel, aes(x = group, y = time)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1)
+```
+
+
+## Python
+
+```{python}
+rats_wheel_py = pd.read_csv("data/rats_wheel.csv")
+```
+
+```{python}
+#| results: hide
+(ggplot(rats_wheel_py,
+         aes(x = "group",
+             y = "time")) +
+     geom_boxplot() +
+     geom_jitter(width = 0.1))
+```
+
+:::
+
+We can immediately see what the issue is with these data. All of the `control` subjects stayed on the wheel for 300s. If we would check the diagnostic plots for these data then it would not look very promising. For example, I am confident that the equality of variance assumption will not hold here!
+
+So, let's do what we're asked to do and calculate the proportion of rats that make it to 300s, for each group.
+
+::: {.panel-tabset group="language"}
+## R
+
+There are many ways of doing this, but here is one:
+
+```{r}
+prop_rats <- rats_wheel %>% 
+  group_by(group, time) %>% 
+  count() %>% 
+  group_by(group) %>% 
+  mutate(group_n = sum(n),
+         prop_rats = n / group_n) %>% 
+  filter(time == 300)
+
+prop_rats
+```
+Next, we calculate the *difference* in the proportion of rats that make it to 300s, between the two groups.
+
+```{r}
+obs_diff_prop <- prop_rats %>% 
+  pull(prop_rats) %>% 
+  diff()
+
+obs_diff_prop
+```
+
+## Python
+
+There are many ways of doing this, but here's one:
+
+```{python}
+# Calculate the total number of observations in each group
+rats_wheel_py['group_n'] = rats_wheel_py.groupby('group')['group'].transform('size')
+
+# Count the number of occurrences for each unique time point
+# and keep the total group count
+prop_rats_py = rats_wheel_py.groupby(['group', 'group_n', 'time']).size().reset_index(name = 'n')
+
+# Calculate the proportion of rats that make it to each time point
+prop_rats_py['prop_rats'] = prop_rats_py['n'] / prop_rats_py['group_n']
+
+# Filter for the 300s time point
+prop_rats_py = prop_rats_py[prop_rats_py['time'] == 300]
+
+prop_rats_py
+```
+
+Next, we calculate the *difference* in the proportion of rats that make it to 300s, between the two groups.
+
+```{python}
+obs_diff_prop = prop_rats_py['prop_rats'].diff().iloc[-1]
+
+obs_diff_prop
+```
+:::
+
+Now we've got that out of the way, we can permute our data. We're reshuffling the `group` labels randomly, then recalculating the permuted proportional difference at time point 300s.
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+seed <- 2602
+```
+
+```{r}
+set.seed(seed)
+
+# Set the number of permutations
+reps <- 1000
+
+# Create a place to store the values
+permuted_stats <- tibble(permuted_diff = numeric(reps))
+
+# Loop through process
+for(i in 1:reps){
+  # Get the data  
+  permuted_data <- rats_wheel
+  
+  # Permute (reshuffle) the group labels
+  permuted_data$group <- sample(permuted_data$group)
+  
+  # Calculate the new proportional differences
+  
+  permuted_diff <- permuted_data %>% 
+  group_by(group, time) %>% 
+  count() %>% 
+  group_by(group) %>% 
+  mutate(group_n = sum(n),
+         prop_rats = n / group_n) %>% 
+  filter(time == 300) %>% 
+  pull(prop_rats) %>% 
+  diff()
+  
+  # Store the calculated difference
+  permuted_stats$permuted_diff[i] <- permuted_diff
+}
+```
+
+## Python
+
+:::
+
+We can now compare the permuted values:
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+ggplot(permuted_stats, aes(permuted_diff)) +
+  geom_histogram() +
+  geom_vline(xintercept = obs_diff_prop, colour = "blue", linewidth = 1) +
+  geom_vline(xintercept = abs(obs_diff_prop), colour = "blue", linewidth = 1)
+```
+
+
+## Python
+
+:::
+
+We can now answer the question if the proportion of rats that make it to full time is different between the groups. We do this by comparing the number of occurrences in the resampled data against the original data. How many times is the difference in proportion larger than the observed difference in proportion? Remember, we are doing a two-tailed test, so we need to get the values on either side of the observed proportion.
+
+In this case the observed difference in proportion between `control` and `treatment` is negative, which we need to take into account.
+
+::: {.panel-tabset group="language"}
+## R
+
+```{r}
+permuted_stats %>% 
+  filter(permuted_diff < obs_diff_prop |
+           permuted_diff > abs(obs_diff_prop))
+```
+
+
+## Python
+
+:::
+
+We find that none of the permuted differences in proportion between `control` and `treatment` that make it to 300s is outside the one we observed. This means that it is extremely unlikely that we'd find these data, if there is indeed no difference between the two groups.
+
+To answer the second question: the median is a particularly useless statistic to use with these data because there is no variation in the measurements for the `control` group. All of the values are 300s, meaning you can't find a value where 50% of the data is on one side of it and 50% of the data is on the other!
+:::
+:::
+
 
 <!--
 ::: {.panel-tabset group="language"}
