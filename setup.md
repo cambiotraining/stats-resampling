@@ -3,20 +3,6 @@ title: "Data & Setup"
 number-sections: false
 ---
 
-<!-- 
-Note for Training Developers:
-We provide instructions for commonly-used software as commented sections below.
-Uncomment the sections relevant for your materials, and add additional instructions where needed (e.g. specific packages used).
-Note that we use tabsets to provide instructions for all three major operating systems.
--->
-
-::: {.callout-tip level=2}
-## Workshop Attendees
-
-If you are attending one of our workshops, we will provide a training environment with all of the required software and data.  
-If you want to setup your own computer to run the analysis demonstrated on this course, you can follow the instructions below.
-:::
-
 ## Data
 
 The data used in these materials is provided as a zip file. 
@@ -29,16 +15,6 @@ Download and unzip the folder to your Desktop to follow along with the materials
 
 ## Software
 
-### Quarto
-
-To develop and render the course materials website, you will need to install _Quarto_:
-
-- Download and install [Quarto](https://quarto.org/docs/get-started/) (available for all major OS). 
-- If you are developing materials using executable `.qmd` documents, it is recommended that you also install the extensions for your favourite IDE (e.g. RStudio, VS Code).
-- If you are developing materials using **JupyterLab** or **Jupyter Notebooks**, please install [Jupytext](https://jupytext.readthedocs.io/en/latest/install.html).
-  - Use the [paired notebook](https://jupytext.readthedocs.io/en/latest/paired-notebooks.html) feature to have synchronised `.ipynb`/`.qmd` files. Only `.qmd` files should be pushed to the repository (`.ipynb` files have been added to `.gitignore`).
-
-<!--
 ### R and RStudio
 
 ::: {.tabset group="os"}
@@ -62,10 +38,22 @@ Download and install all these using default options:
 
 - Go to the [R installation](https://cran.r-project.org/bin/linux/) folder and look at the instructions for your distribution.
 - Download the [RStudio](https://www.rstudio.com/products/rstudio/download/#download) installer for your distribution and install it using your package manager.
-
 :::
--->
 
+### Python
+
+For this course we'll be using [Visual Studio Code](https://code.visualstudio.com). This provides support for various programming languages (including Python and R). It works on Windows, MacOS and Linux. It's also open-source and free.
+
+Please refer to the [installation instructions](https://code.visualstudio.com/docs/python/python-tutorial) and make sure that you verify that Python code will run.
+
+A brief sequence of events:
+
+1. Install Visual Studio Code
+2. Install the VS Code Python extension
+3. Install a Python interpreter
+    * Windows: install from [Python.org](https://www.python.org/downloads/) or use the Microsoft Store
+    * MacOS: install the [Homebrew](https://brew.sh) package manager, then use this to install Python
+    * Linux: comes with Python 3, but needs `pip` to install additional packages
 
 <!--
 ### Conda
